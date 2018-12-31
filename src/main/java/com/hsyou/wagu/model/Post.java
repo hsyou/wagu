@@ -43,23 +43,20 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private Set<Comment> comments = new HashSet<>();
     @OneToMany(mappedBy = "post")
-    private Set<LikePost> likePosts;
+    private Set<LikePost> likePosts= new HashSet<>();
 
-
-    //일반적으로 아래와 같은 convenient method를 만들어 사용한다.
-    public void addComment(Comment comment){
-        this.getComments().add(comment);
-        comment.setPost(this);
+    public static Post createPost(Post post, Account account){
+        post.setWriter(account);
+        if(!account.getPosts().contains(post)){
+            account.getPosts().add(post);
+        }
+        return post;
+    }
+    public void increaseCommentCount(){
         this.commentCount+=1;
     }
-    public void removeComment(Comment comment){
-        this.getComments().remove(comment);
-        comment.setPost(null);
+    public void increaseLikeCount(){
+        this.likeCount+=1;
     }
 
-    public void likePost(LikePost likePost){
-        this.getLikePosts().add(likePost);
-        this.likeCount+=1;
-        likePost.setPost(this);
-    }
 }

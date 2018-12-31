@@ -20,11 +20,25 @@ public class LikePost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne
-    @JoinColumn(name = "post_id", columnDefinition = "likePosts")
+    @JoinColumn(name = "post_id")
     private Post post;
     @ManyToOne
-    @JoinColumn(name = "account_id", columnDefinition = "likePosts")
+    @JoinColumn(name = "account_id")
     private Account account;
     @CreationTimestamp
     private LocalDateTime created;
+
+    public static LikePost createLikePost(Post post, Account account){
+        LikePost likePost = new LikePost();
+        likePost.setAccount(account);
+        if(!account.getLikePosts().contains(likePost)){
+            account.getLikePosts().add(likePost);
+        }
+        likePost.setPost(post);
+        if(!post.getLikePosts().contains(likePost)){
+            post.getLikePosts().add(likePost);
+            post.increaseLikeCount();
+        }
+        return likePost;
+    }
 }

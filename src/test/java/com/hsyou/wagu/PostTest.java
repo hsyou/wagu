@@ -2,9 +2,11 @@ package com.hsyou.wagu;
 
 import com.hsyou.wagu.model.Account;
 import com.hsyou.wagu.model.Comment;
+import com.hsyou.wagu.model.LikePost;
 import com.hsyou.wagu.model.Post;
 import com.hsyou.wagu.repository.AccountRepository;
 import com.hsyou.wagu.repository.CommentRepository;
+import com.hsyou.wagu.repository.LikePostRepository;
 import com.hsyou.wagu.repository.PostRepository;
 import org.junit.After;
 import org.junit.Test;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.swing.text.html.Option;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +47,8 @@ public class PostTest {
     AccountRepository accountRepository;
     @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    LikePostRepository likePostRepository;
 
     @After
     public void cleanup() {
@@ -51,12 +56,12 @@ public class PostTest {
          이후 테스트 코드에 영향을 끼치지 않기 위해
          테스트 메소드가 끝날때 마다 respository 전체 비우는 코드
          **/
-        postRepository.deleteAll();
+//        postRepository.deleteAll();
     }
 
     @Test
     @Rollback(false)
-    public void 포스트등록하기(){
+    public void 포스트_등록하기(){
 
         /**
          * @DataJpaTest 에 보면 @Transactional 어노테이션으로 트랜잭션을 걸어놨기 때문에 아래 코드는
@@ -68,15 +73,24 @@ public class PostTest {
          * 이를 해결하려면 @Rollback(flase) 어노테이션을 테스트 메서드에 추가한다.
          */
 
-
-
         //Given
-        Post post = Post.builder()
-                .title("test")
-                .contents("hello world")
-                .build();
+        Account account = new Account();
+        account.setName("test");
+        account.setEmail("tester@gmail.com");
+
+        Account rstAcnt = accountRepository.save(account);
 
         //When
+        //(Post post, long accountId)
+
+        Post requestPost = new Post();
+        requestPost.setTitle("post1");
+        requestPost.setContents("Hello world");
+        long accountId = rstAcnt.getId();
+
+        Optional<Account> optAccount = accountRepository.findById(accountId);
+
+        Post post = Post.createPost(requestPost, optAccount.get());
 
         Post resultPost = postRepository.save(post);
 
@@ -101,7 +115,7 @@ public class PostTest {
         assertThat(page.getNumberOfElements()).isEqualTo(1);
 
         //When
-        page = postRepository.findByTitleContains("test", PageRequest.of(0, 10));
+        page = postRepository.findByTitleContains(requestPost.getTitle(), PageRequest.of(0, 10));
         //Then
         assertThat(page.getTotalElements()).isEqualTo(1);
         assertThat(page.getNumber()).isEqualTo(0);
@@ -109,96 +123,88 @@ public class PostTest {
         assertThat(page.getNumberOfElements()).isEqualTo(1);
 
 
-
     }
 
     @Test
     @Rollback(false)
-    public void 포스트에댓글등록하기() {
+    public void 포스트_댓글_등록하기() {
         //Given
+        Account account = new Account();
+        account.setName("test");
+        account.setEmail("tester@gmail.com");
+
+        Account rstAcnt = accountRepository.save(account);
 
         Post post = new Post();
-        post.setTitle("test");
+        post.setTitle("post1");
         post.setContents("hello world");
 
-        Post resultPost = postRepository.save(post);
-
-        Comment comment = Comment.builder()
-                .contents("hello, im hs")
-                .build();
-
+        Post rstPost = postRepository.save(Post.createPost(post, rstAcnt));
         //When
+        //(Comment comment, long postId, long accountId)
+        Comment rqstComment =new Comment();
+        rqstComment.setContents("hi~!");
 
-        post.addComment(comment);
+        long accountId = rstAcnt.getId();
+        long postId = rstPost.getId();
+
+        Optional<Account> optAccount = accountRepository.findById(accountId);
+        Optional<Post> optPost = postRepository.findById(postId);
+
+        Comment comment = Comment.createComment(rqstComment, optAccount.get(), optPost.get());
+
+        Comment resultComment = commentRepository.save(comment);
+
         //Then
-        Optional<Post> byId = postRepository.findById(resultPost.getId());
+        Optional<Comment> byId = commentRepository.findById(resultComment.getId());
         assertThat(byId.isPresent()).isEqualTo(true);
-        assertThat(byId.get().getComments().contains(comment)).isEqualTo(true);
-    }
+        assertThat(byId.get().getPost().getId()).isEqualTo(postId);
+        assertThat(byId.get().getWriter().getId()).isEqualTo(accountId);
 
+        Optional<Post> thenPost = postRepository.findById(postId);
+        assertThat(thenPost.get().getComments().contains(byId.get())).isEqualTo(true);
+        assertThat(thenPost.get().getComments().size()).isEqualTo(thenPost.get().getCommentCount());
 
-    @Test
-    @Rollback(false)
-    public void 이러면어떻게될까(){
-        //Given
-
-        Post post1 = new Post();
-        post1.setTitle("post1");
-        post1.setContents("hello");
-
-
-        Post post2 = new Post();
-        post2.setTitle("post1");
-        post2.setContents("hello");
-
-        Comment comment2 = Comment.builder()
-                .contents("hello, im hs2")
-                .build();
-
-        Post result = postRepository.save(post1);
-        long id = result.getId();
-
-        //When
-        post2.addComment(comment2);
-
-        //Then
-        Optional<Post> optPost2 =postRepository.findById(id);
-        assertThat(optPost2.get().getComments().size()).isEqualTo(0);
-
-
+        Optional<Account> thenAcc = accountRepository.findById(accountId);
+        assertThat(thenAcc.get().getComments().contains(byId.get())).isEqualTo(true);
     }
 
     @Test
     @Rollback(false)
-    public void 글등록후댓글등록(){
-
+    public void 포스트_좋아요_등록하기(){
         //Given
-        Account account1 = new Account();
-        account1.setName("post_writer");
+        Account account = new Account();
+        account.setName("test");
+        account.setEmail("tester@gmail.com");
 
-
-        Account account2 = new Account();
-        account2.setName("comment_writer");
-
-
-        Account postW = accountRepository.save(account1);
-        Account commW = accountRepository.save(account2);
-
-        //When
+        Account rstAcnt = accountRepository.save(account);
 
         Post post = new Post();
-        post.setTitle("test");
-        post.setContents("hello");
-        post.setWriter(postW);
+        post.setTitle("post1");
+        post.setContents("hello world");
 
-        Post newPo = postRepository.save(post);
+        Post rstPost = postRepository.save(Post.createPost(post, rstAcnt));
+        //When
+        //(long postId, long accountId)
+        long postId = rstPost.getId();
+        long accountId = rstAcnt.getId();
+        Optional<Account> optAccount = accountRepository.findById(accountId);
+        Optional<Post> optPost = postRepository.findById(postId);
 
-        Comment comment = new Comment();
-        comment.setContents("wow");
-        comment.setPost(newPo);
-        comment.setWriter(commW);
+        LikePost likePost = LikePost.createLikePost(optPost.get(), optAccount.get());
+        LikePost rstLikePost = likePostRepository.save(likePost);
 
-        Comment newC = commentRepository.save(comment);
         //Then
+        Optional<LikePost> byId = likePostRepository.findById(rstLikePost.getId());
+        assertThat(byId.get().getAccount().getId()).isEqualTo(accountId);
+        assertThat(byId.get().getPost().getId()).isEqualTo(postId);
+
+        Optional<Post> thenPost = postRepository.findById(postId);
+        assertThat(thenPost.get().getLikePosts().contains(byId.get())).isEqualTo(true);
+        assertThat(thenPost.get().getLikePosts().size()).isEqualTo(thenPost.get().getLikeCount());
+
+        Optional<Account> thenAcc = accountRepository.findById(accountId);
+        assertThat(thenAcc.get().getLikePosts().contains(byId.get())).isEqualTo(true);
+
     }
 }

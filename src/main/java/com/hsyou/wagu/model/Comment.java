@@ -32,4 +32,18 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "comment_writer", referencedColumnName = "id")
     private Account writer;
+
+    public static Comment createComment(Comment comment, Account account, Post post) {
+        comment.setWriter(account);
+        if(!account.getComments().contains(comment)){
+            account.getComments().add(comment);
+        }
+
+        comment.setPost(post);
+        if(!post.getComments().contains(comment)){
+            post.getComments().add(comment);
+            post.increaseCommentCount();
+        }
+        return comment;
+    }
 }

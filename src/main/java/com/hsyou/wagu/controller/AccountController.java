@@ -15,9 +15,9 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-
     @GetMapping("{id}")
     public ResponseEntity<Account> getAccount(@PathVariable long id){
+
 
         return ResponseEntity.ok(accountService.getAccount(id));
     }

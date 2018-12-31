@@ -16,7 +16,9 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String email;
     private String img;
     @OneToMany(mappedBy = "writer")
@@ -25,7 +27,6 @@ public class Account {
     private Set<Comment> comments = new HashSet<>();
     @OneToMany(mappedBy = "account")
     private Set<LikePost> likePosts = new HashSet<>();
-//
 
 
 }
