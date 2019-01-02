@@ -161,6 +161,8 @@ public class PostTest {
         assertThat(byId.get().getPost().getId()).isEqualTo(postId);
         assertThat(byId.get().getWriter().getId()).isEqualTo(accountId);
 
+        System.out.println(byId.get());
+
         Optional<Post> thenPost = postRepository.findById(postId);
         assertThat(thenPost.get().getComments().contains(byId.get())).isEqualTo(true);
         assertThat(thenPost.get().getComments().size()).isEqualTo(thenPost.get().getCommentCount());
@@ -200,7 +202,7 @@ public class PostTest {
         assertThat(byId.get().getPost().getId()).isEqualTo(postId);
 
         Optional<Post> thenPost = postRepository.findById(postId);
-        assertThat(thenPost.get().getLikePosts().contains(byId.get())).isEqualTo(true);
+
         assertThat(thenPost.get().getLikePosts().size()).isEqualTo(thenPost.get().getLikeCount());
 
         Optional<Account> thenAcc = accountRepository.findById(accountId);

@@ -17,4 +17,37 @@ GET http://localhost:8081/test
 
 GET http://localhost:8081/test2
 
+### 가입
+
+POST http://localhost:8081/account
+Content-Type: application/json
+
+{
+  "name": "test",
+  "email": "tester@gmail.com"
+  }
+
+### 포스트 등록
+
+POST http://localhost:8081/post
+Content-Type: application/json
+
+{
+  "title": "post1",
+  "contents": "hello"
+}
+
+### 포스트 확인
+
+GET http://localhost:8081/post/1
+
+### 코멘트 등록
+POST http://localhost:8081/post/1/comment
+Content-Type: application/json
+
+{
+  "contents": "wow"
+}
+
 ###
+

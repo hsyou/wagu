@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -28,5 +27,12 @@ public class Account {
     @OneToMany(mappedBy = "account")
     private Set<LikePost> likePosts = new HashSet<>();
 
-
+    public AccountDTO toDTO(){
+        return AccountDTO.builder()
+                .id(this.getId())
+                .name(this.getName())
+                .email(this.getEmail())
+                .img(this.getImg())
+                .build();
+    }
 }

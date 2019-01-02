@@ -12,17 +12,18 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class LikePost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
     @CreationTimestamp
@@ -31,10 +32,10 @@ public class LikePost {
     public static LikePost createLikePost(Post post, Account account){
         LikePost likePost = new LikePost();
         likePost.setAccount(account);
+        likePost.setPost(post);
         if(!account.getLikePosts().contains(likePost)){
             account.getLikePosts().add(likePost);
         }
-        likePost.setPost(post);
         if(!post.getLikePosts().contains(likePost)){
             post.getLikePosts().add(likePost);
             post.increaseLikeCount();

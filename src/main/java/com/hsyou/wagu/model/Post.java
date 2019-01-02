@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -37,7 +36,7 @@ public class Post {
     @Column(nullable = false)
     private boolean removed = false;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_writer", referencedColumnName = "id")
     private Account writer;
     @OneToMany(mappedBy = "post")
@@ -45,12 +44,8 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private Set<LikePost> likePosts= new HashSet<>();
 
-    public static Post createPost(Post post, Account account){
-        post.setWriter(account);
-        if(!account.getPosts().contains(post)){
-            account.getPosts().add(post);
-        }
-        return post;
+    public void addPost(Account account){
+        this.setWriter(account);
     }
     public void increaseCommentCount(){
         this.commentCount+=1;
@@ -59,4 +54,13 @@ public class Post {
         this.likeCount+=1;
     }
 
+    public PostDTO toDTO(){
+        return PostDTO.builder()
+                .id(this.getId())
+                .title(this.getTitle())
+                .contents(this.getContents())
+                .imgPath(this.getImgPath())
+                .writer(this.getWriter().toDTO())
+                .build();
+    }
 }
