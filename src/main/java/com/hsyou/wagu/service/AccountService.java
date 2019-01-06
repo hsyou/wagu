@@ -27,4 +27,19 @@ public class AccountService {
         }
     }
 
+    public Optional<Account> getAccountByUid(String uid){
+        return accountRepository.findAccountByUid(uid);
+    }
+
+    public void updateAccountName (long id, String name) {
+
+        Optional<Account> optAccount = accountRepository.findById(id);
+        if(optAccount.isPresent()){
+            optAccount.get().setName(name);
+            accountRepository.save(optAccount.get());
+        }else{
+            throw new CustomNotFoundException("Account를 찾을 수 없습니다.");
+        }
+    }
+
 }
