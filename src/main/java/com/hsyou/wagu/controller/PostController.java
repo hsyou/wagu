@@ -6,6 +6,8 @@ import com.hsyou.wagu.repository.PostRepository;
 import com.hsyou.wagu.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +16,12 @@ public class PostController {
 
     @Autowired
     private PostService postService;
+
+    @GetMapping("s")
+    public String test(){
+
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 
     @GetMapping("{id}")
     public ResponseEntity<PostDTO> getPost(@PathVariable long id){

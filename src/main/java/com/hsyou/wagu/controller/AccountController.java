@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.social.google.api.plus.Person;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
@@ -37,34 +39,39 @@ public class AccountController {
     }
 
     @GetMapping("/googlecallback")
-    public ResponseEntity<String> callback(@RequestParam String code,HttpServletResponse response){
-        Person profile = jwtTokenProvider.getProfileFromAuthServer(code);
-
-        Optional<Account> accountByUid = accountService.getAccountByUid(profile.getId());
-        boolean firstLogin = false;
-        Account rstAccount;
-        if(accountByUid.isPresent()){
-            rstAccount = accountByUid.get();
-        }else{
-            rstAccount = accountService.saveAccount(Account.CreateAccountFromProfile(profile));
-        }
-
-        String token = jwtTokenProvider.createJWT(rstAccount);
+    public ResponseEntity<String> callback(@RequestParam String code, HttpServletRequest request,HttpServletResponse response){
 
         try {
+
+            Person profile = jwtTokenProvider.getProfileFromAuthServer(code);
+
+            System.out.println(profile.getId());
+            Optional<Account> accountByUid = accountService.getAccountByUid(profile.getId());
+            Account rstAccount;
+            if (accountByUid.isPresent()) {
+                rstAccount = accountByUid.get();
+            } else {
+                rstAccount = accountService.saveAccount(Account.CreateAccountFromProfile(profile));
+            }
+
+            String token = jwtTokenProvider.createJWT(rstAccount);
+
             HttpHeaders headers = new HttpHeaders();
-            if(rstAccount.getName()==null) {
+            if (rstAccount.getName() == null) {
                 headers.setLocation(new URI("http://localhost:8080/account/info"));
-            }else{
+            } else {
                 headers.setLocation(new URI("http://localhost:8080/done"));
             }
-            response.addCookie(new Cookie("token",token));
-            return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
-        } catch (URISyntaxException ex){
+            response.addCookie(new Cookie("token", token));
 
+            return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+        }catch (URISyntaxException ex){
+            return new ResponseEntity<>(HttpStatus.HTTP_VERSION_NOT_SUPPORTED);
+        } catch (Exception ex){
+            System.out.println(ex.toString());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("{id}")
@@ -85,13 +92,17 @@ public class AccountController {
     }
 
     @PutMapping("/name")
-    public ResponseEntity<String> updateName (@RequestBody AccountDTO accountDTO, @RequestHeader("x-auth-token") String token){
+    public ResponseEntity<String> updateName (@RequestBody AccountDTO accountDTO){
         try{
-            long id = jwtTokenProvider.validateTokenAndGetId(token);
+            long id = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+//            System.out.println(tmp);
+
+//            long id = jwtTokenProvider.validateTokenAndGetId(tmp);
             accountService.updateAccountName(id, accountDTO.getName());
             return ResponseEntity.ok("ok");
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body("");
+            ex.printStackTrace();
+            return ResponseEntity.badRequest().body(ex.toString());
         }
     }
 
