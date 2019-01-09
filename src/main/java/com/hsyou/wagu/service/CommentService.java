@@ -8,7 +8,9 @@ import com.hsyou.wagu.repository.AccountRepository;
 import com.hsyou.wagu.repository.CommentRepository;
 import com.hsyou.wagu.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -26,10 +28,10 @@ public class CommentService {
         Optional<Account> optAccount = accountRepository.findById(accountId);
         Optional<Post> optPost = postRepository.findById(postId);
         if(!optAccount.isPresent()){
-            throw new CustomNotFoundException("Account not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account Not Found.");
         }
         if(!optPost.isPresent()){
-            throw new CustomNotFoundException("Post not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post Not Found.");
         }
         Comment created = Comment.createComment(comment, optAccount.get(), optPost.get());
 
@@ -41,7 +43,7 @@ public class CommentService {
         if(optComment.isPresent()){
             return optComment.get();
         }else{
-            throw new CustomNotFoundException("comment를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment Not Found.");
         }
     }
 
@@ -51,7 +53,7 @@ public class CommentService {
             optComment.get().setRemoved(true);
             return commentRepository.save(optComment.get());
         }else{
-            throw new CustomNotFoundException("comment를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment Not Found.");
         }
     }
 }

@@ -17,5 +17,13 @@ public class AccountDTO {
     private String email;
     private String img;
 
+    public Account toEntity(){
+        return Account.builder()
+                .id(id)
+                .name(name)
+                .email(email)
+                .img(img)
+                .build();
+    }
 
 }

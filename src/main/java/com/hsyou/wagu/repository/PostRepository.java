@@ -14,5 +14,4 @@ import org.springframework.stereotype.Repository;
 public interface PostRepository extends JpaRepository<Post,Long> {
 
     //Pageable
-    Page<Post> findByTitleContains(String title, Pageable pageable);
 }

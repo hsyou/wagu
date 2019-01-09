@@ -44,15 +44,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
                 .and()
-                .addFilterAfter(new JwtFilter(jwtTokenProvider),BasicAuthenticationFilter.class)
+                .addFilterBefore(new JwtFilter(jwtTokenProvider),BasicAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/account/**", "/resources/**").permitAll()
+                .antMatchers("/auth/**", "/resources/**").permitAll()
                 .anyRequest().authenticated();
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/account/googlecallback");
+        web.ignoring().antMatchers("/auth/googlecallback");
     }
 
     @Bean

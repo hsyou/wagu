@@ -17,7 +17,6 @@ import java.util.Set;
 public class PostDTO {
 
     private long id;
-    private String title;
     private String contents;
     private String[] imgPath;
     private int commentCount = 0;
@@ -29,5 +28,24 @@ public class PostDTO {
     private AccountDTO writer;
     private Set<Comment> comments = new HashSet<>();
     private Set<LikePost> likePosts= new HashSet<>();
+
+    public Post toEntity(){
+        Post post = Post.builder()
+                .id(id)
+                .contents(contents)
+                .imgPath(imgPath)
+                .commentCount(commentCount)
+                .likeCount(likeCount)
+                .created(created)
+                .updated(updated)
+                .removed(removed)
+                .comments(comments)
+                .likePosts(likePosts)
+                .build();
+        if(writer !=null){
+            post.setWriter(writer.toEntity());
+        }
+        return post;
+    }
 
 }

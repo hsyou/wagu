@@ -32,43 +32,5 @@ public class HomeController {
         return "OK";
     }
 
-    @GetMapping("/test")
-    public String test(){
-        Account account1 = new Account();
-        account1.setName("post_writer");
-
-
-        Account account2 = new Account();
-        account2.setName("comment_writer");
-
-
-        Account postW = accountRepository.save(account1);
-        Account commW = accountRepository.save(account2);
-
-        //When
-
-        Post post = new Post();
-        post.setTitle("test");
-        post.setContents("hello");
-        post.setWriter(postW);
-
-        Post newPo = postRepository.save(post);
-
-        Comment comment = new Comment();
-        comment.setContents("wow");
-        comment.setPost(newPo);
-        comment.setWriter(commW);
-
-        Comment newC = commentRepository.save(comment);
-        return "";
-    }
-
-    @GetMapping("/test2")
-    public String test2(){
-        Optional<Post> byId = postRepository.findById(1l);
-
-        postRepository.delete(byId.get());
-        return "1";
-    }
 
 }

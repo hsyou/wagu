@@ -15,13 +15,12 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(length=255, nullable = false)
-    private String title;
     @Column(columnDefinition = "TEXT", nullable = false)
     private String contents;
     private String[] imgPath;
@@ -57,7 +56,6 @@ public class Post {
     public PostDTO toDTO(){
         return PostDTO.builder()
                 .id(this.getId())
-                .title(this.getTitle())
                 .contents(this.getContents())
                 .imgPath(this.getImgPath())
                 .writer(this.getWriter().toDTO())

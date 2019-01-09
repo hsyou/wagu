@@ -2,10 +2,12 @@ package com.hsyou.wagu;
 
 import com.hsyou.wagu.service.JwtTokenProvider;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -26,10 +28,19 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+
+        String requestURI = request.getRequestURI();
+        if(requestURI.startsWith("/auth")){
+            filterChain.doFilter(request,response);
+        }
+        System.out.println("Filter");
+
         String token = jwtTokenProvider.resolveToken(request);
 
-        System.out.println("token"+token);
+
         if(token == null){
+
+            ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             filterChain.doFilter(request,response);
         }
 
@@ -39,23 +50,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
             UsernamePasswordAuthenticationToken auth;
             auth = new UsernamePasswordAuthenticationToken(id,null,null);
-            System.out.println("valid");
+
+            System.out.println("Set Auth - "+id);
             SecurityContextHolder.getContext().setAuthentication(auth);
+            filterChain.doFilter(request,response);
         }catch(Exception e){
 
-            System.out.println("invlaid");
+
             SecurityContextHolder.clearContext();
+
+            ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        filterChain.doFilter(request,response);
         }
-        filterChain.doFilter(request,response);
-//        String token = jwtTokenProvider.resolveToken((HttpServletRequest) request);
-//        if (token != null) {
-//            long id = jwtTokenProvider.validateTokenAndGetId(token);
-//
-//            request.setAttribute("id", id);
-//        }else{
-//            System.out.println("No Token");
-//        }
-//
-//        System.out.println("token filter");
     }
 }

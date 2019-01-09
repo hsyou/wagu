@@ -4,7 +4,9 @@ import com.hsyou.wagu.exception.CustomNotFoundException;
 import com.hsyou.wagu.model.Account;
 import com.hsyou.wagu.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -23,7 +25,7 @@ public class AccountService {
         if(optAccount.isPresent()){
             return optAccount.get();
         }else{
-            throw new CustomNotFoundException("Account를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account Not Found.");
         }
     }
 
@@ -38,7 +40,7 @@ public class AccountService {
             optAccount.get().setName(name);
             accountRepository.save(optAccount.get());
         }else{
-            throw new CustomNotFoundException("Account를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account Not Found.");
         }
     }
 
