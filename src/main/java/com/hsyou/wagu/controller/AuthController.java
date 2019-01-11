@@ -36,6 +36,15 @@ public class AuthController {
         return jwtTokenProvider.getLoginURL();
     }
 
+    @GetMapping("/test")
+    public String test(HttpServletResponse response) {
+        Cookie setCookie = new Cookie("aa", "aaaa");
+
+        setCookie.setMaxAge(60*60*24*3);
+        response.addCookie(setCookie);
+        return ";";
+    }
+
     @GetMapping("/googlecallback")
     public ResponseEntity callback(@RequestParam String code, HttpServletRequest request, HttpServletResponse response){
 
@@ -56,13 +65,11 @@ public class AuthController {
 
             HttpHeaders headers = new HttpHeaders();
             if (rstAccount.getName() == null) {
-                headers.setLocation(new URI("http://localhost:8080/account/info"));
+                headers.setLocation(new URI("http://localhost:8080/account/info/"+token));
             } else {
-                headers.setLocation(new URI("http://localhost:8080/done"));
+                headers.setLocation(new URI("http://localhost:8080/done/"+token));
             }
 
-            System.out.println("created Token "+token);
-            response.addCookie(new Cookie("token", token));
 
             return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
         }catch (URISyntaxException ex){

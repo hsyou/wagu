@@ -46,7 +46,7 @@ public class AccountController {
         long id = 0;
         try{
             id= Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
-
+            System.out.println(id);
         }catch (Exception ex){
             ex.printStackTrace();
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized");

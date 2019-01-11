@@ -24,6 +24,7 @@ import org.springframework.social.oauth2.OAuth2Parameters;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
@@ -42,16 +43,17 @@ public class JwtTokenProvider {
     private OAuth2Operations oAuth2Operations;
 
 
-    private static final long TTL = 60 * 60 * 1000; // 60 min
+    private static final long TTL = 24* 60 * 60 * 1000; // 24 hour
 
     public String createJWT(Account account){
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
+
             String token = JWT.create()
                     .withIssuer("wagu-auth")
                     .withClaim("id", account.getId())
                     .withClaim("email", account.getEmail())
-                    .withExpiresAt(new Date(System.currentTimeMillis() + TTL))
+                    .withExpiresAt(new Date(System.currentTimeMillis()+TTL))
                     .sign(algorithm);
             return token;
         }catch (JWTCreationException exception){

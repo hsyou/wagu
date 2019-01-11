@@ -33,9 +33,9 @@ public class JwtFilter extends OncePerRequestFilter {
         if(requestURI.startsWith("/auth")){
             filterChain.doFilter(request,response);
         }
-        System.out.println("Filter");
 
         String token = jwtTokenProvider.resolveToken(request);
+        System.out.println("Filter "+token);
 
 
         if(token == null){
@@ -57,6 +57,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }catch(Exception e){
 
 
+            e.printStackTrace();
             SecurityContextHolder.clearContext();
 
             ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
